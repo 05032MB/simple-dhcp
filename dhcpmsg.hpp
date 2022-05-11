@@ -79,8 +79,8 @@ public:
         uint32_t cookie = 0x63825363;
     };
 
-    const *msghdr getHeader() const {
-
+    const msghdr& getHeader() const {
+        return header;
     }
 
 private:

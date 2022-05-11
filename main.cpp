@@ -3,6 +3,7 @@
 #include "dhcpopts.hpp"
 #include "pcapwrapper.hpp"
 #include "socket.hpp"
+#include "addrpool.hpp"
 
 void dumppkt(const buffer &h) {
     int len = h.getSize();
@@ -62,6 +63,19 @@ int main(int argc, char *argv[])
 
         */
 
+        addrpool poolIp4("192.168.2.1", "192.168.2.10");
+
+        int ads = 11;
+        while(--ads) {
+            auto caddr = poolIp4.getFreeAddr();
+            std::cout << ntohl(caddr.s_addr) << " " << inet_ntoa(caddr) << std::endl;
+        }
+        poolIp4.freeAddr({htonl(3232236040)});
+        std::cout << "freed" << std::endl;
+        auto caddr = poolIp4.getFreeAddr();
+        std::cout << ntohl(caddr.s_addr) << " " << inet_ntoa(caddr) << std::endl;
+        
+
         udpsocketserver serverPrimitive;
         serverPrimitive.bind(67);
 
@@ -71,6 +85,8 @@ int main(int argc, char *argv[])
             auto& bytes = std::get<0>(data);
             bytes.trimToSize(size);
             auto msg = dhcpmsg::makeDhcpMsg(bytes.data());
+
+            std::cout << std::hex << +msg.getHeader().client_hw_addr[0] << std::endl;
 
             dumppkt(bytes);
 
