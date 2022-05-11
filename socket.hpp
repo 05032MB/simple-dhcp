@@ -7,7 +7,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <string>
-#include <tuple>
+#include <utility>
 #include "buffer.hpp"
 
 class udpsocketserver
@@ -53,7 +53,7 @@ public:
             throw std::runtime_error("Cannot bind socket: " + std::string(strerror(errno)));
     }
 
-    std::tuple<buffer&, sockaddr_in&, int> receive() {
+    std::pair<buffer&, sockaddr_in&> receive() {
         socklen_t raddr_len = 0;
         buff.size = siz;
 
@@ -61,7 +61,10 @@ public:
         if(len < 0)
             throw std::runtime_error("Recvfrom died with: " + std::string(strerror(errno)));
 
-        return {buff, raddr, len};
+        std::pair<buffer&, sockaddr_in&> rets{buff, raddr};
+        
+        buff.trimToSize(len);
+        return rets;
     }
 
     bool send(const buffer& msg, const sockaddr_in &where) {

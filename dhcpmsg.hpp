@@ -25,6 +25,10 @@ public:
             optionsLen += i.getSize();
         }
         auto buff = buffer(sizeof(header) + optionsLen);
+        
+#ifdef DEBUG_POISON_BUFFER
+        std::memset(buff.data(), 0, '^');
+#endif
 
         std::memcpy(buff.data(), &header, sizeof(header));
         auto *rawptr = buff.data() + sizeof(header);
@@ -43,12 +47,22 @@ public:
         return buff;
     }
 
-    template<class T>
-    static dhcpmsg makeDhcpMsg(const T* mem) {
-        const uint8_t *memory = reinterpret_cast<const uint8_t *>(mem);
+    static dhcpmsg makeDhcpMsg(const buffer& mem) {
+        const uint8_t *memory = mem.data();
 
         dhcpmsg rets;
-        memcpy(&rets.header, mem, sizeof(rets.header));
+        memcpy(&rets.header, mem.data(), sizeof(rets.header));
+
+        auto* pos = memory + sizeof(dhcpmsg::msghdr);
+        while(pos < pos + mem.getSize()) {
+            const auto testopts = dhcpopt::makeDhcpOpt(pos);
+            rets.addOption(testopts);
+            
+            if(testopts.getCode() == 255) // OPT END
+                break;
+            pos += testopts.getSize();
+        }
+
         return rets;
     }
 

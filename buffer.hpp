@@ -9,15 +9,7 @@ class buffer
     uint8_t * ptr = nullptr;
     size_t size = 0;
 
-public:
-    buffer(size_t bytes)
-    {
-        ptr = new uint8_t[bytes];
-        size = bytes;
-    }
-
-    buffer(buffer&& other)
-    {
+    void move(buffer&& other) {
         size = std::exchange(other.size, size);
         ptr = std::exchange(other.ptr, ptr);
 
@@ -26,6 +18,21 @@ public:
             other.ptr = nullptr;
             other.size = 0;
         }
+    }
+
+public:
+    buffer(size_t bytes)
+    {
+        ptr = new uint8_t[bytes];
+        size = bytes;
+    }
+
+    buffer(buffer&& other) {
+        this->move(std::move(other));
+    }
+
+    void operator=(buffer&& other) {
+        this->move(std::move(other));
     }
 
     // ni ma!
@@ -39,7 +46,7 @@ public:
         this->size = size;
     }
 
-    void shrintToSize(size_t size) {
+    void shrinkToSize(size_t size) {
         if(size >= this->size)
             return;
         

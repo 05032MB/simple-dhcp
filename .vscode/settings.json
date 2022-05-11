@@ -69,6 +69,8 @@
         "any": "cpp",
         "codecvt": "cpp",
         "csignal": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp"
     }
 }

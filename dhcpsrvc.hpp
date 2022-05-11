@@ -10,6 +10,8 @@
 #include <string>
 #include <tuple>
 #include <iostream>
+#include <algorithm>
+#include <memory>
 
 class dhcpsrvc{
     std::string iface;
@@ -62,38 +64,33 @@ public:
     void run() {
         sendTestNak();
 
-        auto data = socketListener.receive();
-        int size = std::get<2>(data);
-        while (size != 0) {
-            auto& bytes = std::get<0>(data);
-            bytes.trimToSize(size);
-            auto msg = dhcpmsg::makeDhcpMsg(bytes.data());
+        //auto data = socketListener.receive();
+        //int size = std::get<2>(data);
 
-            //std::cout << std::hex << +msg.getHeader().client_hw_addr[0] << std::endl;
+        using rettype = std::pair<buffer&, sockaddr_in&>;
+        for (auto data = std::make_unique<rettype>(socketListener.receive()); 
+                std::get<0>(*data).getSize() != 0; data = std::make_unique<rettype>(socketListener.receive()) ) {
+            auto& bytes = std::get<0>(*data);
 
-            //dumppkt(bytes);
+            auto msg = dhcpmsg::makeDhcpMsg(bytes);
 
-            /*auto* pos = bytes.data() + sizeof(dhcpmsg::msghdr);
-            while(pos < pos + size) {
-                auto testopts = dhcpopt::makeDhcpOpt(pos);
-                if(testopts.getCode() == 255) {
-                    std::cout << "END" << std::endl;
-                    break;
-                }
-                //std::cout << "??" << sizeof(dhcpmsg::msghdr) << std::endl;
+            for(const auto &i : msg.getOptions()) {
+                std::cout << std::hex << +i.getCode() << std::dec << std::endl;
+            }
+            dumppkt(bytes);
 
-                //printf("%02x ", testopts.getCode());
+            const auto& opts = msg.getOptions();
+            const auto dhcpcommand = std::find_if(std::begin(opts), std::end(opts), [] (const dhcpopt &o) { return o.getCode() == 53; });
 
-                std::cout << "Code: " << std::hex << +testopts.getCode() << " size: " << +testopts.getParamsSize() << "\n";
-                for(const auto &i : testopts.getParams()) {
-                    std::cout << std::hex << +i << std::endl;
-                }
-                
-                pos += testopts.getSize();
-            }*/
+            std::cout << +dhcpcommand->getSize() << std::endl;
+            if(dhcpcommand->getSize() > 1) {
+                std::cout << "Skipped malformed DHCP packet " << std::endl;
+                continue;
+            }
 
-            auto data = socketListener.receive();
-            size = std::get<2>(data);
+            switch(dhcpcommand->getParams().back()) {
+
+            }
         }
     }
 };

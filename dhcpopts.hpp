@@ -21,11 +21,6 @@ class dhcpopt
             return opt;
         }
 
-        /*template<uint8_t code>
-        static dhcpopt makeDhcpOpt() {
-            return dhcpopt(code);
-        }*/
-
         template<class T>
         static dhcpopt makeDhcpOpt(const T* mem) {
             const uint8_t *memory = reinterpret_cast<const uint8_t *>(mem);
@@ -103,8 +98,8 @@ class dhcpopt
 #define DHCPLEASEUNASSIGNED   DHCPOPTS_GEN_DHCP_TYPE(11)
 #define DHCPLEASEUNKNOWN      DHCPOPTS_GEN_DHCP_TYPE(12)
 #define DHCPLEASEACTIVE       DHCPOPTS_GEN_DHCP_TYPE(13)
-#define DHCPBULKLEASEQUERY 	  DHCPOPTS_GEN_DHCP_TYPE(14)
-#define DHCPLEASEQUERYDONE 	  DHCPOPTS_GEN_DHCP_TYPE(15)
+#define DHCPBULKLEASEQUERY    DHCPOPTS_GEN_DHCP_TYPE(14)
+#define DHCPLEASEQUERYDONE    DHCPOPTS_GEN_DHCP_TYPE(15)
 #define DHCPACTIVELEASEQUERY  DHCPOPTS_GEN_DHCP_TYPE(16)
 #define DHCPLEASEQUERYSTATUS  DHCPOPTS_GEN_DHCP_TYPE(17)
 #define DHCPTLS               DHCPOPTS_GEN_DHCP_TYPE(18)
