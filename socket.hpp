@@ -20,7 +20,7 @@ class udpsocketserver
 
 public:
     udpsocketserver() {
-        sock = socket(AF_INET, SOCK_RAW, IPPROTO_UDP);
+        sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if(sock < 0)
             throw std::runtime_error("Cannot open socket: " + std::string(strerror(errno)));
 
@@ -32,10 +32,10 @@ public:
         if(setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &opt, sizeof(opt)) < 0 )
             throw std::runtime_error("Cannot setopt for socket: " + std::string(strerror(errno)));
 
-        opt = 1;
-        if(setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt)) < 0) {
-            throw std::runtime_error("Cannot setopt for socket: " + std::string(strerror(errno)));
-        }
+        //opt = 1;
+        //if(setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt)) < 0) {
+        //    throw std::runtime_error("Cannot setopt for socket: " + std::string(strerror(errno)));
+        //}
 
     }
 
