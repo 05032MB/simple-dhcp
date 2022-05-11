@@ -9,14 +9,15 @@
 
 #define __packed __attribute__((packed))
 
+
+// http://www.tcpipguide.com/free/t_DHCPMessageFormat.htm
 class dhcpmsg
 {
 public:
 
-    dhcpmsg() = delete;
+    dhcpmsg() = default;
 
-    buffer getMemoryBlock()
-    {
+    buffer getMemoryBlock() {
         size_t optionsLen = 0;
         for(const auto &i : options)
         {
@@ -39,6 +40,15 @@ public:
         }
 
         return buff;
+    }
+
+    template<class T>
+    static dhcpmsg makeDhcpMsg(const T* mem) {
+        const uint8_t *memory = reinterpret_cast<const uint8_t *>(mem);
+
+        dhcpmsg rets;
+        memcpy(&rets.header, mem, sizeof(rets.header));
+        return rets;
     }
 
     enum class boot_t : uint8_t
@@ -69,7 +79,18 @@ public:
         uint32_t cookie = 0x63825363;
     };
 
+    const *msghdr getHeader() const {
+
+    }
+
 private:
+
+    template <class T>
+    inline void assignAndAdvance(T& target, const T* src) {
+        target = *src;
+        src += sizeof(T);
+    }
+
     msghdr header;
     std::vector<dhcpopt> options = {};
 

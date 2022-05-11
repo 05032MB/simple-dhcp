@@ -30,7 +30,6 @@ int main(int argc, char *argv[])
     if(argc < 2)
         return -1;
     
-    //std::cout<< sizeof(dhcpmsg::msghdr) <<"\n";
     try {
         /*pcap_wrapper dhcpListener(argv[1]);
 
@@ -71,16 +70,27 @@ int main(int argc, char *argv[])
         while (size != 0) {
             auto& bytes = std::get<0>(data);
             bytes.trimToSize(size);
+            auto msg = dhcpmsg::makeDhcpMsg(bytes.data());
 
             dumppkt(bytes);
 
-            auto testopts = dhcpopt::makeDhcpOpt(bytes.data() + sizeof(dhcpmsg::msghdr), 1);
+            auto* pos = bytes.data() + sizeof(dhcpmsg::msghdr);
+            while(pos < pos + size) {
+                auto testopts = dhcpopt::makeDhcpOpt(pos);
+                if(testopts.getCode() == 255) {
+                    std::cout << "END" << std::endl;
+                    break;
+                }
+                //std::cout << "??" << sizeof(dhcpmsg::msghdr) << std::endl;
 
-            printf("%02x ", testopts->getCode());
+                //printf("%02x ", testopts.getCode());
 
-            std::cout << "Code: " << std::hex << testopts->getCode() << " size: " << testopts->getParamsSize() << "\n";
-            for(const auto &i : testopts->getParams()) {
-                std::cout << std::hex << i << std::endl;
+                std::cout << "Code: " << std::hex << +testopts.getCode() << " size: " << +testopts.getParamsSize() << "\n";
+                for(const auto &i : testopts.getParams()) {
+                    std::cout << std::hex << +i << std::endl;
+                }
+                
+                pos += testopts.getSize();
             }
 
             auto data = serverPrimitive.receive();

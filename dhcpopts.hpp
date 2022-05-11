@@ -11,7 +11,7 @@ class dhcpopt
 
     public:
         dhcpopt(uint8_t code) {
-            code = code;
+            this->code = code;
         }
 
         template<uint8_t code, uint8_t ...opts>
@@ -22,27 +22,28 @@ class dhcpopt
         }
 
         template<class T>
-        static std::shared_ptr<dhcpopt> makeDhcpOpt(const T* mem, int size) {
-            const uint8_t * memory = reinterpret_cast<const uint8_t *>(mem);
+        static dhcpopt makeDhcpOpt(const T* mem) {
+            const uint8_t *memory = reinterpret_cast<const uint8_t *>(mem);
             uint8_t code = *memory;
+            uint8_t size = *(memory + sizeof(code));
 
-            std::cout<<"#"<<code<<"\n";
-
-            auto opt = std::make_shared<dhcpopt>(code);
-            //opt->size = * reinterpret_cast<const uint8_t *>(memory + sizeof(code));
+            dhcpopt opt(code);
+            if(code == 255) { // END has no length field
+                return opt;
+            }
             
-            for(const uint8_t * i = reinterpret_cast<const uint8_t *> (memory + sizeof(code) + sizeof(size)); 
-                i < reinterpret_cast<const uint8_t *>(memory + size); i++) {
-                    opt->params.push_back(*i);
+            for(const uint8_t * i = memory + sizeof(code) + sizeof(size); 
+                i < reinterpret_cast<const uint8_t *>(memory + sizeof(code) + sizeof(size) + size); i++) {
+                    opt.params.push_back(*i);
             }
 
             return opt;
         }
 
-        std::shared_ptr<buffer> getBuffer() const {
-            auto ret = std::make_shared<buffer>(getSize());
+        buffer getBuffer() const {
+            buffer ret(getSize());
 
-            auto * rawptr = ret->data();
+            auto * rawptr = ret.data();
             rawptr[0] = code;
             rawptr[1] = getParamsSize();
             
