@@ -22,8 +22,11 @@ class dhcpopt
         }
 
         template<class T>
-        static std::shared_ptr<dhcpopt> makeDhcpOpt(T* memory, int size) {
-            uint8_t code = * reinterpret_cast<const uint8_t *>(memory);
+        static std::shared_ptr<dhcpopt> makeDhcpOpt(const T* mem, int size) {
+            const uint8_t * memory = reinterpret_cast<const uint8_t *>(mem);
+            uint8_t code = *memory;
+
+            std::cout<<"#"<<code<<"\n";
 
             auto opt = std::make_shared<dhcpopt>(code);
             //opt->size = * reinterpret_cast<const uint8_t *>(memory + sizeof(code));
@@ -54,8 +57,8 @@ class dhcpopt
             return code;
         }
 
-        const auto * getParams() const {
-            return params.data();
+        const auto& getParams() const {
+            return params;
         }
 
         uint8_t getParamsSize() const {

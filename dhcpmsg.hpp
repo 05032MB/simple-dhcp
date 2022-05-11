@@ -41,7 +41,6 @@ public:
         return buff;
     }
 
-private:
     enum class boot_t : uint8_t
     {
         BOOTREQUEST = 1,
@@ -60,15 +59,18 @@ private:
         uint16_t secs = 0, flags = 0;
 
         uint32_t client_ip_addr = 0, your_ip_addr = 0, server_ip_addr = 0, gateway_ip_addr = 0;
+        
         uint8_t client_hw_addr[6];
         uint8_t client_hw_addr_zero_1[2] = {0};
-        uint8_t client_hw_addr_zero_2[2] = {0};
-        uint32_t client_hw_addr_zero_3[2] = {0};
+
+        uint32_t client_hw_addr_zero_2_3[2] = {0};
         uint8_t zeros[192] = {0};
 
         uint32_t cookie = 0x63825363;
-    } header;
+    };
 
+private:
+    msghdr header;
     std::vector<dhcpopt> options = {};
 
 };

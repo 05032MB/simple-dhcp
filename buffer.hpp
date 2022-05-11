@@ -32,11 +32,29 @@ public:
     buffer(buffer& other) = delete;
     buffer(const buffer& other) = delete;
 
+    void trimToSize(size_t size) {
+        if(size >= this->size)
+            return;
+        
+        this->size = size;
+        /*uint8_t * newptr = new uint8_t[size];
+        memcpy(newptr, ptr, size);
+        std::swap(ptr, newptr);
+        delete [] newptr;*/
+    }
+
+    buffer concat(const buffer &other) {
+        buffer ret(other.getSize() + getSize());
+        memcpy(ret.ptr, ptr, size);
+        memcpy(ret.ptr, other.ptr + size, other.size);
+        return ret;
+    }
+
     uint8_t* data() const {
         return ptr;
     }
 
-    auto getSize() const {
+    int getSize() const {
         return size;
     }
 
@@ -45,4 +63,6 @@ public:
         if(ptr)
             delete [] ptr;
     }
+
+    friend class udpsocketserver;
 };
