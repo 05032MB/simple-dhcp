@@ -1,35 +1,18 @@
-#include <iostream>
 #include "dhcpmsg.hpp"
 #include "dhcpopts.hpp"
 #include "pcapwrapper.hpp"
 #include "socket.hpp"
 #include "addrpool.hpp"
+#include "dhcpsrvc.hpp"
 
-void dumppkt(const buffer &h) {
-    int len = h.getSize();
-    printf("[%dB]\n", len);
-    const auto* bytes = h.data();
-    for (int i = 0; i < len; i += 16) {
-        printf("0x%04x:  ", i);
-        for (int j = 0; j < 16; j++) {
-            unsigned char ch = (i + j < len) ? bytes[i + j] : 0;
-            if (i + j < len) printf("%02x ", ch);
-            else printf("   ");
-        }
-        printf(" ");
-        for (int j = 0; j < 16; j++) {
-            unsigned char ch = (i + j < len) ? bytes[i + j] : ' ';
-            if (!isprint(ch)) ch = '.';
-                printf("%c", ch);
-        }
-        printf("\n");
-    }
-}
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
-    if(argc < 2)
+    if(argc < 2) {
+        std::cout << "Usage: " << argv[0] << " interface " << std::endl;
         return -1;
+    }
     
     try {
         /*pcap_wrapper dhcpListener(argv[1]);
@@ -63,7 +46,8 @@ int main(int argc, char *argv[])
 
         */
 
-        addrpool poolIp4("192.168.2.1", "192.168.2.10");
+       /*
+        addrpool poolIp4("192.168.2.100", "192.168.2.191");
 
         int ads = 11;
         while(--ads) {
@@ -74,44 +58,13 @@ int main(int argc, char *argv[])
         std::cout << "freed" << std::endl;
         auto caddr = poolIp4.getFreeAddr();
         std::cout << ntohl(caddr.s_addr) << " " << inet_ntoa(caddr) << std::endl;
-        
+        */
 
-        udpsocketserver serverPrimitive;
-        serverPrimitive.bind(67);
+        //udpsocketserver serverPrimitive;
+        //serverPrimitive.bind(67);
 
-        auto data = serverPrimitive.receive();
-        int size = std::get<2>(data);
-        while (size != 0) {
-            auto& bytes = std::get<0>(data);
-            bytes.trimToSize(size);
-            auto msg = dhcpmsg::makeDhcpMsg(bytes.data());
-
-            std::cout << std::hex << +msg.getHeader().client_hw_addr[0] << std::endl;
-
-            dumppkt(bytes);
-
-            auto* pos = bytes.data() + sizeof(dhcpmsg::msghdr);
-            while(pos < pos + size) {
-                auto testopts = dhcpopt::makeDhcpOpt(pos);
-                if(testopts.getCode() == 255) {
-                    std::cout << "END" << std::endl;
-                    break;
-                }
-                //std::cout << "??" << sizeof(dhcpmsg::msghdr) << std::endl;
-
-                //printf("%02x ", testopts.getCode());
-
-                std::cout << "Code: " << std::hex << +testopts.getCode() << " size: " << +testopts.getParamsSize() << "\n";
-                for(const auto &i : testopts.getParams()) {
-                    std::cout << std::hex << +i << std::endl;
-                }
-                
-                pos += testopts.getSize();
-            }
-
-            auto data = serverPrimitive.receive();
-            size = std::get<2>(data);
-        }
+        dhcpsrvc service(argv[1], "192.168.2.100", "192.168.2.191");
+        service.run();
 
 
     } catch(const std::exception &e) {

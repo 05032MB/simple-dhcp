@@ -37,10 +37,17 @@ public:
             return;
         
         this->size = size;
-        /*uint8_t * newptr = new uint8_t[size];
+    }
+
+    void shrintToSize(size_t size) {
+        if(size >= this->size)
+            return;
+        
+        this->size = size;
+        uint8_t * newptr = new uint8_t[size];
         memcpy(newptr, ptr, size);
         std::swap(ptr, newptr);
-        delete [] newptr;*/
+        delete [] newptr;
     }
 
     buffer concat(const buffer &other) {

@@ -73,6 +73,7 @@ public:
                 return false;
             off += many;
         }
+        return true;
     }
 
     int getRawSock() const {

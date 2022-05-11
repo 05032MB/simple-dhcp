@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <cstring>
 #include <vector>
+#include <netinet/in.h>
 
 #include "buffer.hpp"
 #include "dhcpopts.hpp"
@@ -76,11 +77,23 @@ public:
         uint32_t client_hw_addr_zero_2_3[2] = {0};
         uint8_t zeros[192] = {0};
 
-        uint32_t cookie = 0x63825363;
+        uint32_t cookie = htonl(0x63825363);
     };
+
+    msghdr& getHeader() {
+        return header;
+    }
 
     const msghdr& getHeader() const {
         return header;
+    }
+
+    void addOption(const dhcpopt &opt) {
+        options.push_back(opt);
+    }
+
+    const std::vector<dhcpopt>& getOptions() const {
+        return options;
     }
 
 private:

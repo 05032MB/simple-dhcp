@@ -27,8 +27,6 @@ class addrpool {
 
         maxsize = ntohl(this->high.s_addr) - ntohl(this->low.s_addr) + 1;
         current.s_addr = htonl(ntohl(this->low.s_addr) - 1);
-
-        //std::cout << ntohl(low.s_addr) << " " << ntohl(high.s_addr) << std::endl;
     }
 
 public:
@@ -58,7 +56,7 @@ public:
         auto incrCurrent = [&]() {current.s_addr = htonl(ntohl(current.s_addr) + 1);};
         do {
             incrCurrent();
-            //std::cout << ntohl(current.s_addr) << "/" << ntohl(high.s_addr) << std::endl;
+
             if(ntohl(current.s_addr) > ntohl(high.s_addr)) {
                 current = low;
             }
@@ -69,8 +67,8 @@ public:
         return current;
     }
 
-    void freeAddr(in_addr addr) {
-        std::cout << usedAddrs.erase(addr);
+    bool freeAddr(in_addr addr) {
+        return usedAddrs.erase(addr) == 1;
     }
 
 };

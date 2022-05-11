@@ -15,11 +15,16 @@ class dhcpopt
         }
 
         template<uint8_t code, uint8_t ...opts>
-        static std::shared_ptr<dhcpopt> makeDhcpOpt() {
-            auto opt = std::make_shared<dhcpopt>(code);
-            opt->params = {opts...};
+        static dhcpopt makeDhcpOpt() {
+            dhcpopt opt(code);
+            opt.params = {opts...};
             return opt;
         }
+
+        /*template<uint8_t code>
+        static dhcpopt makeDhcpOpt() {
+            return dhcpopt(code);
+        }*/
 
         template<class T>
         static dhcpopt makeDhcpOpt(const T* mem) {
@@ -74,3 +79,34 @@ class dhcpopt
 
         friend class dhcpmsg;
 };
+
+
+// common options aliases
+
+#define DHCPOPTS_GEN_TYPE(code, ...) \
+    dhcpopt::makeDhcpOpt<code, __VA_ARGS__>()
+
+#define DHCPOPTS_GEN_DHCP_TYPE(...) \
+    DHCPOPTS_GEN_TYPE(53, __VA_ARGS__)
+
+// https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol#DHCP_message_types
+#define	DHCPDISCOVER          DHCPOPTS_GEN_DHCP_TYPE(1)
+#define	DHCPOFFER             DHCPOPTS_GEN_DHCP_TYPE(2)
+#define	DHCPREQUEST           DHCPOPTS_GEN_DHCP_TYPE(3)
+#define	DHCPDECLINE           DHCPOPTS_GEN_DHCP_TYPE(4)
+#define	DHCPACK               DHCPOPTS_GEN_DHCP_TYPE(5)
+#define	DHCPNAK               DHCPOPTS_GEN_DHCP_TYPE(6)
+#define	DHCPRELEASE           DHCPOPTS_GEN_DHCP_TYPE(7)
+#define	DHCPINFORM            DHCPOPTS_GEN_DHCP_TYPE(8)
+#define	DHCPFORCERENEW        DHCPOPTS_GEN_DHCP_TYPE(9)
+#define DHCPLEASEQUERY        DHCPOPTS_GEN_DHCP_TYPE(10)
+#define DHCPLEASEUNASSIGNED   DHCPOPTS_GEN_DHCP_TYPE(11)
+#define DHCPLEASEUNKNOWN      DHCPOPTS_GEN_DHCP_TYPE(12)
+#define DHCPLEASEACTIVE       DHCPOPTS_GEN_DHCP_TYPE(13)
+#define DHCPBULKLEASEQUERY 	  DHCPOPTS_GEN_DHCP_TYPE(14)
+#define DHCPLEASEQUERYDONE 	  DHCPOPTS_GEN_DHCP_TYPE(15)
+#define DHCPACTIVELEASEQUERY  DHCPOPTS_GEN_DHCP_TYPE(16)
+#define DHCPLEASEQUERYSTATUS  DHCPOPTS_GEN_DHCP_TYPE(17)
+#define DHCPTLS               DHCPOPTS_GEN_DHCP_TYPE(18)
+
+#define OPTS_END dhcpopt::makeDhcpOpt<255>()
