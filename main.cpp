@@ -6,6 +6,12 @@
 #include "dhcpsrvc.hpp"
 
 #include <iostream>
+#include <sstream>
+
+std::string getEnvOrEmpty(const std::string &name) {
+    char* str = getenv(name.c_str());
+    return str != nullptr ? std::string(str) : "";
+}
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +21,18 @@ int main(int argc, char *argv[])
     }
     
     try {
-        dhcpsrvc service(argv[1], "192.168.1.101", "192.168.1.191", "192.168.1.1", {"192.168.1.1", "8.8.8.8"});
+        auto servs = getEnvOrEmpty("DHCP_APP_DNS_SERVERS");
+        std::stringstream splitter(servs);
+        std::vector<std::string> dnsAddrs;
+
+        std::string tmps;
+        while(std::getline(splitter, tmps, ';')) {
+            dnsAddrs.push_back(tmps);
+        }
+
+        dhcpsrvc service(argv[1], getEnvOrEmpty("DHCP_APP_POOL_LOW"), getEnvOrEmpty("DHCP_APP_POOL_HIGH"), 
+            getEnvOrEmpty("DHCP_APP_GATEWAY"), dnsAddrs);
+        
         service.run();
     } catch(const std::exception &e) {
         std::cout << "Exception: " << e.what() << std::endl;
