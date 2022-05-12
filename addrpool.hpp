@@ -12,7 +12,7 @@ class addrpool {
     // they are in network endianess
     in_addr low, high;
     in_addr current;
-    int maxsize;
+    size_t maxsize;
 
     std::set<in_addr, addrCmp> usedAddrs;
 

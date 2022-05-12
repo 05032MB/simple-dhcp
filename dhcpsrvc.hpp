@@ -50,7 +50,7 @@ class dhcpsrvc{
         }
     }
 
-    void dhcpDiscoverHandler(const dhcpmsg &in, const sockaddr_in &src) {
+    void dhcpDiscoverHandler(const dhcpmsg &in, const sockaddr_in &src [[maybe_unused]]) {
         dhcpmsg reply;
         std::memcpy(reply.getHeader().client_hw_addr, in.getHeader().client_hw_addr, 6);
         reply.getHeader().tx_id = in.getHeader().tx_id;
@@ -72,7 +72,7 @@ class dhcpsrvc{
         }
     }
 
-    void dhcpRequestHandler(const dhcpmsg &in, const sockaddr_in &src) {
+    void dhcpRequestHandler(const dhcpmsg &in, const sockaddr_in &src [[maybe_unused]]) {
         dhcpmsg reply;
         std::memcpy(reply.getHeader().client_hw_addr, in.getHeader().client_hw_addr, 6);
         reply.getHeader().tx_id = in.getHeader().tx_id;
@@ -172,6 +172,9 @@ public:
                 case 3:
                     std::cout << "Handling DHCPREQUEST" << std::endl;
                     dhcpRequestHandler(msg, data->second);
+                    break;
+                default:
+                    std::cout << "Idk" << std::endl;
                     break;
             }
         }

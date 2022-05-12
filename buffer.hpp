@@ -68,7 +68,7 @@ public:
         return ptr;
     }
 
-    int getSize() const {
+    size_t getSize() const {
         return size;
     }
 

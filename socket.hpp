@@ -65,7 +65,7 @@ public:
 
     bool send(const buffer& msg, const sockaddr_in &where) {
         int off = 0;
-        while(int many = sendto(sock, msg.data() + off, msg.getSize() - off, 0, reinterpret_cast<const sockaddr*>(&where), sizeof(where)) < msg.getSize()) {
+        while(int many = sendto(sock, msg.data() + off, msg.getSize() - off, 0, reinterpret_cast<const sockaddr*>(&where), sizeof(where)) < (int)msg.getSize()) {
             if(many < 0)
                 THROW_RUNTIME_GET_ERRNO("Sendto died with: "); 
             else if(many == 0)
