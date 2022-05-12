@@ -54,11 +54,15 @@ class dhcpsrvc{
         dhcpmsg reply;
         std::memcpy(reply.getHeader().client_hw_addr, in.getHeader().client_hw_addr, 6);
         reply.getHeader().tx_id = in.getHeader().tx_id;
-        reply.addOption(DHCPOFFER);
         
-        auto candidateAddr = ipv4Pool.getFreeAddr();
-        leasedAddrs.insert({candidateAddr, offerStatus::offered});
-        reply.getHeader().client_ip_addr = candidateAddr.s_addr;
+        if(ipv4Pool.getFreeAddrsCount() == 0) {
+            reply.addOption(DHCPNAK);
+        } else {
+            reply.addOption(DHCPOFFER);
+            auto candidateAddr = ipv4Pool.getFreeAddr();
+            leasedAddrs.insert({candidateAddr, offerStatus::offered});
+            reply.getHeader().client_ip_addr = candidateAddr.s_addr;
+        }
 
         reply.signOff();
 
@@ -99,10 +103,6 @@ class dhcpsrvc{
                     reply.addOption(DHCPNAK);
                 }
             }
-
-            /*auto candidateAddr = ipv4Pool.getFreeAddr();
-            leasedAddrs.insert({candidateAddr, offerStatus::offered});
-            reply.getHeader().client_ip_addr = candidateAddr.s_addr;*/
         }
 
         auto gatewayIp = OPT_DEFAULT_GATEWAY_IP;
@@ -142,10 +142,7 @@ public:
     }
 
     void run() {
-        sendTestNak();
-
-        //auto data = socketListener.receive();
-        //int size = std::get<2>(data);
+        //sendTestNak();
 
         using rettype = std::pair<buffer&, sockaddr_in&>;
         for (auto data = std::make_unique<rettype>(socketListener.receive()); 
@@ -159,17 +156,9 @@ public:
 
             auto msg = dhcpmsg::makeDhcpMsg(bytes);
 
-            /*
-            for(const auto &i : msg.getOptions()) {
-                std::cout << std::hex << +i.getCode() << "s " << +i.getParamsSize() << std::dec << std::endl;
-            }
-            dumppkt(bytes);
-            */
-
             const auto& opts = msg.getOptions();
             const auto dhcpcommand = std::find_if(std::begin(opts), std::end(opts), [] (const dhcpopt &o) { return o.getCode() == 53; });
 
-            //std::cout << "psize" << +dhcpcommand->getParamsSize() << std::endl;
             if(dhcpcommand->getParamsSize() > 1) {
                 std::cout << "Skipped malformed DHCP packet " << std::endl;
                 continue;

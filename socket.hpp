@@ -8,7 +8,9 @@
 #include <unistd.h>
 #include <string>
 #include <utility>
+
 #include "buffer.hpp"
+#include "misc.hpp"
 
 class udpsocketserver
 {
@@ -22,21 +24,15 @@ public:
     udpsocketserver() {
         sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         if(sock < 0)
-            throw std::runtime_error("Cannot open socket: " + std::string(strerror(errno)));
+            THROW_RUNTIME_GET_ERRNO("Cannot open socket: ");
 
         int opt = 1;
         if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-            throw std::runtime_error("Cannot setopt for socket: " + std::string(strerror(errno)));
+            THROW_RUNTIME_GET_ERRNO("Cannot setopt for socket: ");
 
         opt = siz;
         if(setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &opt, sizeof(opt)) < 0 )
-            throw std::runtime_error("Cannot setopt for socket: " + std::string(strerror(errno)));
-
-        //opt = 1;
-        //if(setsockopt(sock, IPPROTO_IP, IP_HDRINCL, &opt, sizeof(opt)) < 0) {
-        //    throw std::runtime_error("Cannot setopt for socket: " + std::string(strerror(errno)));
-        //}
-
+            THROW_RUNTIME_GET_ERRNO("Cannot setopt for socket: ");
     }
 
     void bind(int port, std::string addr = "") {
@@ -50,7 +46,7 @@ public:
         saddr.sin_addr.s_addr = _addr;
 
         if(::bind(sock, reinterpret_cast<sockaddr*>(&saddr), sizeof(saddr)) < 0)
-            throw std::runtime_error("Cannot bind socket: " + std::string(strerror(errno)));
+            THROW_RUNTIME_GET_ERRNO("Cannot bind socket: ");
     }
 
     std::pair<buffer&, sockaddr_in&> receive() {
@@ -59,7 +55,7 @@ public:
 
         int len = recvfrom(sock, buff.data(), buff.getSize(), 0, reinterpret_cast<sockaddr*>(&raddr), &raddr_len);
         if(len < 0)
-            throw std::runtime_error("Recvfrom died with: " + std::string(strerror(errno)));
+            THROW_RUNTIME_GET_ERRNO("Recvfrom died with: ");
 
         std::pair<buffer&, sockaddr_in&> rets{buff, raddr};
         
@@ -71,7 +67,7 @@ public:
         int off = 0;
         while(int many = sendto(sock, msg.data() + off, msg.getSize() - off, 0, reinterpret_cast<const sockaddr*>(&where), sizeof(where)) < msg.getSize()) {
             if(many < 0)
-                throw std::runtime_error("Sendto died with: " + std::string(strerror(errno)));
+                THROW_RUNTIME_GET_ERRNO("Sendto died with: "); 
             else if(many == 0)
                 return false;
             off += many;
