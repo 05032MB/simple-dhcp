@@ -81,8 +81,31 @@ class dhcpopt
 #define DHCPOPTS_GEN_TYPE(code, ...) \
     dhcpopt::makeDhcpOpt<code, __VA_ARGS__>()
 
+#define DHCP_MSG 53
 #define DHCPOPTS_GEN_DHCP_TYPE(...) \
-    DHCPOPTS_GEN_TYPE(53, __VA_ARGS__)
+    DHCPOPTS_GEN_TYPE(DHCP_MSG, __VA_ARGS__)
+
+
+enum DHCPCODES : int {
+    DISCOVER = 1,
+    OFFER,
+    REQUEST,
+    DECLINE,
+    ACK,
+    NAK,
+    RELEASE,
+    INFORM,
+    FORCERENEW,
+    LEASEQUERY,
+    LEASEUNASSIGNED,
+    LEASEUNKNOWN,
+    LEASEACTIVE,
+    BULKLEASEQUERY,
+    LEASEQUERYDONE,
+    ACTIVELEASEQUERY,
+    LEASEQUERYSTATUS,
+    TLS,
+};
 
 // https://en.wikipedia.org/wiki/Dynamic_Host_Configuration_Protocol#DHCP_message_types
 #define	DHCPDISCOVER          DHCPOPTS_GEN_DHCP_TYPE(1)

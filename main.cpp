@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
     }
     
     try {
-        dhcpsrvc service(argv[1], "192.168.1.101", "192.168.1.191");
+        dhcpsrvc service(argv[1], "192.168.1.101", "192.168.1.191", "192.168.1.1", {"192.168.1.1", "8.8.8.8"});
         service.run();
     } catch(const std::exception &e) {
         std::cout << "Exception: " << e.what() << std::endl;

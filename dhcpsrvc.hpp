@@ -20,6 +20,9 @@ class dhcpsrvc{
     std::string iface;
 
     addrpool ipv4Pool;
+    in_addr gateway;
+    std::vector<in_addr> dns;
+
     udpsocketserver socketListener;
 
     enum class offerStatus {
@@ -50,6 +53,21 @@ class dhcpsrvc{
         }
     }
 
+    static in_addr getAddrFromParams(const dhcpopt &reqAddr) {
+        in_addr addr = {0};
+        for(const auto &i : reqAddr.getParams()) {
+            addr.s_addr <<= 8;
+            addr.s_addr |= i;
+        }
+        addr.s_addr = htonl(addr.s_addr);
+
+        return addr;
+    }
+
+    static auto findFirstOptOfType(const dhcpmsg &in, uint8_t optCode) {
+        return std::find_if(std::begin(in.getOptions()), std::end(in.getOptions()), [&optCode](const dhcpopt& o) { return o.getCode() == optCode; });
+    }
+
     void dhcpDiscoverHandler(const dhcpmsg &in, const sockaddr_in &src [[maybe_unused]]) {
         dhcpmsg reply;
         std::memcpy(reply.getHeader().client_hw_addr, in.getHeader().client_hw_addr, 6);
@@ -77,22 +95,17 @@ class dhcpsrvc{
         std::memcpy(reply.getHeader().client_hw_addr, in.getHeader().client_hw_addr, 6);
         reply.getHeader().tx_id = in.getHeader().tx_id;
         
-        auto reqAddr = std::find_if(std::begin(in.getOptions()), std::end(in.getOptions()), [](const dhcpopt& o) { return o.getCode() == 50; });
+        auto reqAddr = findFirstOptOfType(in, 50);
         if(reqAddr == std::end(in.getOptions())) {
             reply.addOption(DHCPNAK); // no ip requested
         } else {
             
-            in_addr addr = {0};
-            for(const auto &i : reqAddr->getParams()) {
-                addr.s_addr <<= 8;
-                addr.s_addr |= i;
-            }
-            addr.s_addr = htonl(addr.s_addr);
+            in_addr addr = getAddrFromParams(*reqAddr);
             reply.getHeader().client_ip_addr = addr.s_addr;
 
             if(ipv4Pool.isFreeAddr(addr)) {
                 ipv4Pool.claimAddr(addr);
-                leasedAddrs[addr] = offerStatus::offered;
+                leasedAddrs[addr] = offerStatus::assigned;
                 reply.addOption(DHCPACK);
             } else {
                 auto leased = leasedAddrs.find(addr);
@@ -105,13 +118,15 @@ class dhcpsrvc{
             }
         }
 
+        for(const auto& dnsAddr : this->dns) {
+            auto dnsIp = OPT_DEFAULT_DNS;
+            memcpy(&dnsIp.params[0], &dnsAddr, 4);
+            reply.addOption(dnsIp);
+        }
+
         auto gatewayIp = OPT_DEFAULT_GATEWAY_IP;
-        auto dnsIp = OPT_DEFAULT_DNS;
-        auto gatewayAddr = inet_addr("192.168.1.1"); // hack, fix it!
-        memcpy(&gatewayIp.params[0], &gatewayAddr, 4);
-        memcpy(&dnsIp.params[0], &gatewayAddr, 4);
+        memcpy(&gatewayIp.params[0], &this->gateway, 4);
         reply.addOption(gatewayIp);
-        reply.addOption(dnsIp);
         reply.signOff();
 
         sockaddr_in target = {AF_INET, htons(68), INADDR_BROADCAST, 0};
@@ -120,10 +135,31 @@ class dhcpsrvc{
         }
     }
 
+    void dhcpReleaseHandler(const dhcpmsg &in, const sockaddr_in &src [[maybe_unused]]) {
+        in_addr addr = {0};
+        memcpy(&addr, &in.getHeader().client_ip_addr, 4);
+
+        ipv4Pool.freeAddr(addr);
+        leasedAddrs.erase(addr);
+    }
+
 public:
-    dhcpsrvc(std::string iface, std::string lowIp, std::string highIp) 
+    dhcpsrvc(const std::string& iface, const std::string& lowIp, const std::string& highIp, const std::string& gateway, const std::vector<std::string>& dns = {}) 
         : ipv4Pool(lowIp, highIp) {
         this->iface = iface;
+
+        if(inet_aton(gateway.c_str(), &this->gateway) <= 0) {
+            THROW_RUNTIME_GET_ERRNO("inet_aton failed: ");
+        }
+
+        for(const auto &i: dns) {
+            in_addr tmp;
+            if(inet_aton(i.c_str(), &tmp) <= 0) {
+                THROW_RUNTIME_GET_ERRNO("inet_aton failed: ");
+            }
+            this->dns.push_back(tmp);
+        }
+
         socketListener.bind(67);
     }
 
@@ -155,23 +191,25 @@ public:
             }
 
             auto msg = dhcpmsg::makeDhcpMsg(bytes);
+            const auto dhcpcommand = findFirstOptOfType(msg, DHCP_MSG);
 
-            const auto& opts = msg.getOptions();
-            const auto dhcpcommand = std::find_if(std::begin(opts), std::end(opts), [] (const dhcpopt &o) { return o.getCode() == 53; });
-
-            if(dhcpcommand->getParamsSize() > 1) {
+            if(dhcpcommand != std::end(msg.getOptions()) && dhcpcommand->getParamsSize() > 1) {
                 std::cout << "Skipped malformed DHCP packet " << std::endl;
                 continue;
             }
 
             switch(dhcpcommand->getParams().back()) {
-                case 1:
+                case DHCPCODES::DISCOVER :
                     std::cout << "Handling DHCPDISCOVER" << std::endl;
                     dhcpDiscoverHandler(msg, data->second);
                     break;
-                case 3:
+                case DHCPCODES::REQUEST:
                     std::cout << "Handling DHCPREQUEST" << std::endl;
                     dhcpRequestHandler(msg, data->second);
+                    break;
+                case DHCPCODES::RELEASE:
+                    std::cout << "Handling DHCPRELEASE" << std::endl;
+                    dhcpReleaseHandler(msg, data->second);
                     break;
                 default:
                     std::cout << "Idk" << std::endl;

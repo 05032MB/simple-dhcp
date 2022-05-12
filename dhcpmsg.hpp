@@ -55,7 +55,7 @@ public:
 
         auto* pos = memory + sizeof(dhcpmsg::msghdr);
         while(pos < pos + mem.getSize()) {
-            const auto testopts = dhcpopt::makeDhcpOpt(pos);
+            const auto& testopts = dhcpopt::makeDhcpOpt(pos);
             rets.addOption(testopts);
             
             if(testopts.getCode() == 255) // OPT END
