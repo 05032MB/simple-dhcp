@@ -71,6 +71,7 @@
         "csignal": "cpp",
         "*.ipp": "cpp",
         "numbers": "cpp",
-        "semaphore": "cpp"
+        "semaphore": "cpp",
+        "valarray": "cpp"
     }
 }

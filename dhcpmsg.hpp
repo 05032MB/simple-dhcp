@@ -38,7 +38,7 @@ public:
             rawptr[off++] = i.getCode();
             rawptr[off++] = i.getParamsSize();
 
-            for(auto it = begin(i.params); it != end(i.params); ++it) {
+            for(auto it = std::begin(i.params); it != std::end(i.params); ++it) {
                 std::memcpy(rawptr + off, &(*it), sizeof(decltype(*it)) );
                 off += sizeof(decltype(*it));
             }
@@ -64,6 +64,11 @@ public:
         }
 
         return rets;
+    }
+
+    void signOff() {
+        addOption(OPTS_END);
+        header.op = boot_t::BOOTREPLY;
     }
 
     enum class boot_t : uint8_t

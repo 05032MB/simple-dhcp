@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
         //udpsocketserver serverPrimitive;
         //serverPrimitive.bind(67);
 
-        dhcpsrvc service(argv[1], "192.168.2.100", "192.168.2.191");
+        dhcpsrvc service(argv[1], "192.168.1.101", "192.168.1.191");
         service.run();
 
 

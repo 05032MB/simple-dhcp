@@ -14,11 +14,6 @@ class addrpool {
     in_addr current;
     int maxsize;
 
-    struct addrCmp {
-        bool operator() (const in_addr& a, const in_addr& b) const { 
-            return a.s_addr < b.s_addr; 
-        }
-    };
     std::set<in_addr, addrCmp> usedAddrs;
 
     void commonInit() {
@@ -67,8 +62,20 @@ public:
         return current;
     }
 
-    bool freeAddr(in_addr addr) {
+    bool freeAddr(const in_addr& addr) {
         return usedAddrs.erase(addr) == 1;
+    }
+
+    bool isFreeAddr(const in_addr& addr) const {
+        return usedAddrs.count(addr) == 0;
+    }
+
+    void claimAddr(const in_addr& addr) {
+        usedAddrs.insert(addr);
+    }
+
+    int getFreeAddrsCount() const {
+        return maxsize - usedAddrs.size();
     }
 
 };
