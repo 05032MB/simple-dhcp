@@ -193,7 +193,7 @@ public:
             auto msg = dhcpmsg::makeDhcpMsg(bytes);
             const auto dhcpcommand = findFirstOptOfType(msg, DHCP_MSG);
 
-            if(dhcpcommand != std::end(msg.getOptions()) && dhcpcommand->getParamsSize() > 1) {
+            if(dhcpcommand == std::end(msg.getOptions()) || dhcpcommand->getParamsSize() > 1) {
                 std::cout << "Skipped malformed DHCP packet " << std::endl;
                 continue;
             }
