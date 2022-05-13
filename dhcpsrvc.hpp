@@ -20,7 +20,7 @@ class dhcpsrvc{
     std::string iface;
 
     addrpool ipv4Pool;
-    in_addr gateway;
+    in_addr gateway, subnet;
     std::vector<in_addr> dns;
 
     udpsocketserver socketListener;
@@ -82,6 +82,10 @@ class dhcpsrvc{
             reply.getHeader().client_ip_addr = candidateAddr.s_addr;
         }
 
+        auto subnetOpt = OPT_SUBNET_MASK;
+        memcpy(&subnetOpt.params[0], &this->subnet, 4);
+        reply.addOption(subnetOpt);
+
         reply.signOff();
 
         sockaddr_in target = {AF_INET, htons(68), INADDR_BROADCAST, 0};
@@ -118,6 +122,10 @@ class dhcpsrvc{
             }
         }
 
+        auto subnetOpt = OPT_SUBNET_MASK;
+        memcpy(&subnetOpt.params[0], &this->subnet, 4);
+        reply.addOption(subnetOpt);
+
         for(const auto& dnsAddr : this->dns) {
             auto dnsIp = OPT_DEFAULT_DNS;
             memcpy(&dnsIp.params[0], &dnsAddr, 4);
@@ -144,11 +152,17 @@ class dhcpsrvc{
     }
 
 public:
-    dhcpsrvc(const std::string& iface, const std::string& lowIp, const std::string& highIp, const std::string& gateway, const std::vector<std::string>& dns = {}) 
+    dhcpsrvc(const std::string& iface, const std::string& lowIp, const std::string& highIp, 
+        const std::string& gateway, const std::string& subnetMask, const std::vector<std::string>& dns = {}) 
         : ipv4Pool(lowIp, highIp) {
+
         this->iface = iface;
 
         if(inet_aton(gateway.c_str(), &this->gateway) <= 0) {
+            THROW_RUNTIME_GET_ERRNO("inet_aton failed: ");
+        }
+
+        if(inet_aton(subnetMask.c_str(), &this->subnet) <= 0) {
             THROW_RUNTIME_GET_ERRNO("inet_aton failed: ");
         }
 

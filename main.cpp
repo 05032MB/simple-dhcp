@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
         }
 
         dhcpsrvc service(argv[1], getEnvOrEmpty("DHCP_APP_POOL_LOW"), getEnvOrEmpty("DHCP_APP_POOL_HIGH"), 
-            getEnvOrEmpty("DHCP_APP_GATEWAY"), dnsAddrs);
+            getEnvOrEmpty("DHCP_APP_GATEWAY"), getEnvOrEmpty("DHCP_APP_SUBNET_MASK"), dnsAddrs);
         
         service.run();
     } catch(const std::exception &e) {

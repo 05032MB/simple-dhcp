@@ -130,5 +130,6 @@ enum DHCPCODES : int {
 #define OPT_REQUESTED_IP_ADDR  DHCPOPTS_GEN_TYPE(50, 0, 0, 0, 0)
 #define OPT_DEFAULT_GATEWAY_IP DHCPOPTS_GEN_TYPE(3,  0, 0, 0, 0)
 #define OPT_DEFAULT_DNS        DHCPOPTS_GEN_TYPE(6,  0, 0, 0, 0)
+#define OPT_SUBNET_MASK        DHCPOPTS_GEN_TYPE(1,  0, 0, 0, 0)
 
 #define OPTS_END dhcpopt::makeDhcpOpt<255>()
