@@ -27,7 +27,7 @@ public:
         auto buff = buffer(sizeof(header) + optionsLen);
         
 #ifdef DEBUG_POISON_BUFFER
-        std::memset(buff.data(), 0, '^');
+        std::memset(buff.data(), '^', buff.getSize());
 #endif
 
         std::memcpy(buff.data(), &header, sizeof(header));
