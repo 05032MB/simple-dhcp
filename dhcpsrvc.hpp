@@ -194,7 +194,7 @@ public:
     void run() {
         //sendTestNak();
 
-        using rettype = std::pair<buffer&, sockaddr_in&>;
+        using rettype = std::pair<const buffer&, const sockaddr_in&>;
         for (auto data = std::make_unique<rettype>(socketListener.receive()); 
                 std::get<0>(*data).getSize() != 0; data = std::make_unique<rettype>(socketListener.receive()) ) {
             

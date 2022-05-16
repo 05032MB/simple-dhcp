@@ -49,7 +49,7 @@ public:
             THROW_RUNTIME_GET_ERRNO("Cannot bind socket: ");
     }
 
-    std::pair<buffer&, sockaddr_in&> receive() {
+    std::pair<const buffer&, const sockaddr_in&> receive() {
         socklen_t raddr_len = 0;
         buff.size = siz;
 
@@ -57,22 +57,17 @@ public:
         if(len < 0)
             THROW_RUNTIME_GET_ERRNO("Recvfrom died with: ");
 
-        std::pair<buffer&, sockaddr_in&> rets{buff, raddr};
+        std::pair<const buffer&, const sockaddr_in&> rets{buff, raddr};
         
         buff.trimToSize(len);
         return rets;
     }
 
     bool send(const buffer& msg, const sockaddr_in &where) {
-        int off = 0;
-        while(int many = sendto(sock, msg.data() + off, msg.getSize() - off, 0, reinterpret_cast<const sockaddr*>(&where), sizeof(where)) < (int)msg.getSize()) {
-            if(many < 0)
-                THROW_RUNTIME_GET_ERRNO("Sendto died with: "); 
-            else if(many == 0)
-                return false;
-            off += many;
-        }
-        return true;
+        int many = sendto(sock, msg.data(), msg.getSize(), 0, reinterpret_cast<const sockaddr*>(&where), sizeof(where));
+        if(many < 0)
+            THROW_RUNTIME_GET_ERRNO("Sendto died with: "); 
+        return many != (int)msg.getSize();
     }
 
     int getRawSock() const {
