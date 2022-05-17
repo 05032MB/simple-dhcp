@@ -90,7 +90,7 @@ class dhcpsrvc{
 
         sockaddr_in target = {AF_INET, htons(68), INADDR_BROADCAST, 0};
         if(socketListener.send(reply.getMemoryBlock(), target) <= 0) {
-            std::cout << "Couldn't reply with DHCPOFFER" << std::string(strerror(errno)) << std::endl;
+            std::cout << "Couldn't reply with DHCPOFFER: " << std::string(strerror(errno)) << std::endl;
         }
     }
 
@@ -139,7 +139,7 @@ class dhcpsrvc{
 
         sockaddr_in target = {AF_INET, htons(68), INADDR_BROADCAST, 0};
         if(socketListener.send(reply.getMemoryBlock(), target) <= 0) {
-            std::cout << "Couldn't reply with DHCPOFFER" << std::string(strerror(errno)) << std::endl;
+            std::cout << "Couldn't reply with DHCPACK: " << std::string(strerror(errno)) << std::endl;
         }
     }
 

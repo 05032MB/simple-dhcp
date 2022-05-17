@@ -67,7 +67,7 @@ public:
         int many = sendto(sock, msg.data(), msg.getSize(), 0, reinterpret_cast<const sockaddr*>(&where), sizeof(where));
         if(many < 0)
             THROW_RUNTIME_GET_ERRNO("Sendto died with: "); 
-        return many != (int)msg.getSize();
+        return many == (int)msg.getSize();
     }
 
     int getRawSock() const {
