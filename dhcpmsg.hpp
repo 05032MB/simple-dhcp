@@ -1,12 +1,12 @@
 #pragma once
 
+#include "buffer.hpp"
+#include "dhcpopts.hpp"
+
 #include <stdint.h>
 #include <cstring>
 #include <vector>
 #include <netinet/in.h>
-
-#include "buffer.hpp"
-#include "dhcpopts.hpp"
 
 #define __packed __attribute__((packed))
 

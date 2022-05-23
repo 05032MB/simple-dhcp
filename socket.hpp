@@ -1,5 +1,8 @@
 #pragma once
 
+#include "buffer.hpp"
+#include "misc.hpp"
+
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <stdexcept>
@@ -8,9 +11,7 @@
 #include <unistd.h>
 #include <string>
 #include <utility>
-
-#include "buffer.hpp"
-#include "misc.hpp"
+#include <iostream>
 
 class udpsocketserver
 {
@@ -28,11 +29,17 @@ public:
 
         int opt = 1;
         if(setsockopt(sock, SOL_SOCKET, SO_BROADCAST, &opt, sizeof(opt)) < 0)
-            THROW_RUNTIME_GET_ERRNO("Cannot setopt for socket: ");
+            THROW_RUNTIME_GET_ERRNO("Cannot setopt brd for socket: ");
 
         opt = siz;
         if(setsockopt(sock, SOL_SOCKET, SO_RCVBUF, &opt, sizeof(opt)) < 0 )
-            THROW_RUNTIME_GET_ERRNO("Cannot setopt for socket: ");
+            THROW_RUNTIME_GET_ERRNO("Cannot setopt size for socket: ");
+
+        socklen_t st = 0;
+        getsockopt(sock, SOL_SOCKET, SO_RCVBUF, &opt, &st);
+
+        if(opt != siz)
+            std::cout << "Warning: requested rcv buff: " << siz << " but got: " << opt << std::endl;
     }
 
     void bind(int port, std::string addr = "") {

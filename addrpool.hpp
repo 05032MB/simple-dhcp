@@ -32,7 +32,7 @@ public:
         commonInit();
     }
 
-    addrpool(std::string low, std::string high) {
+    addrpool(const std::string& low, const std::string& high) {
         if(inet_aton(low.c_str(), &this->low) <= 0) {
             THROW_RUNTIME_GET_ERRNO("inet_aton failed: ");
         }

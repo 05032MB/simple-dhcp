@@ -9,6 +9,7 @@
 #include <sstream>
 
 std::string getEnvOrEmpty(const std::string &name) {
+    // https://stackoverflow.com/questions/4237812/should-i-free-delete-char-returned-by-getenv - tl;dr - no
     char* str = getenv(name.c_str());
     return str != nullptr ? std::string(str) : "";
 }
@@ -33,6 +34,7 @@ int main(int argc, char *argv[])
         dhcpsrvc service(argv[1], getEnvOrEmpty("DHCP_APP_POOL_LOW"), getEnvOrEmpty("DHCP_APP_POOL_HIGH"), 
             getEnvOrEmpty("DHCP_APP_GATEWAY"), getEnvOrEmpty("DHCP_APP_SUBNET_MASK"), dnsAddrs);
         
+        std::cout << "Service starting..." << std::endl;
         service.run();
     } catch(const std::exception &e) {
         std::cout << "Exception: " << e.what() << std::endl;
