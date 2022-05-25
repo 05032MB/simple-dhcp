@@ -15,11 +15,10 @@
 
 class udpsocketserver
 {
-#define SOCKADDR_IN_INIT {0, 0, 0, 0}
     int sock;
     static constexpr int siz = 65536;
     buffer buff{siz};
-    sockaddr_in raddr = SOCKADDR_IN_INIT;
+    sockaddr_in raddr = {};
 
 public:
     udpsocketserver() {
@@ -43,7 +42,7 @@ public:
     }
 
     void bind(int port, const std::string& addr = "") {
-        sockaddr_in saddr = SOCKADDR_IN_INIT;
+        sockaddr_in saddr = {};
         saddr.sin_family = AF_INET;
         saddr.sin_port = htons(port);
         
@@ -88,6 +87,4 @@ public:
     ~udpsocketserver() {
         close(sock);
     }
-
-#undef SOCKADDR_IN_INIT
 };

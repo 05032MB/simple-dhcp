@@ -7,9 +7,9 @@
 #include <iostream>
 #include <sstream>
 
-std::string getEnvOrEmpty(const std::string &name) {
+std::string getEnvOrEmpty(std::string_view name) {
     // https://stackoverflow.com/questions/4237812/should-i-free-delete-char-returned-by-getenv - tl;dr - no
-    char* str = getenv(name.c_str());
+    char* str = getenv(name.data());
     return str != nullptr ? std::string(str) : "";
 }
 
