@@ -17,7 +17,7 @@
 // https://www.netmanias.com/en/post/techdocs/5998/dhcp-network-protocol/understanding-the-basic-operations-of-dhcp
 // https://www.netmanias.com/en/?m=view&id=techdocs&no=5999
 class dhcpsrvc{
-    std::string iface;
+    std::string addr;
 
     addrpool ipv4Pool;
     in_addr gateway, subnet;
@@ -152,11 +152,11 @@ class dhcpsrvc{
     }
 
 public:
-    dhcpsrvc(const std::string& iface, const std::string& lowIp, const std::string& highIp, 
+    dhcpsrvc(const std::string& addr, const std::string& lowIp, const std::string& highIp, 
         const std::string& gateway, const std::string& subnetMask, const std::vector<std::string>& dns = {}) 
         : ipv4Pool(lowIp, highIp) {
 
-        this->iface = iface;
+        this->addr = addr;
 
         if(inet_aton(gateway.c_str(), &this->gateway) <= 0) {
             THROW_RUNTIME_GET_ERRNO("inet_aton failed: ");
@@ -174,7 +174,7 @@ public:
             this->dns.push_back(tmp);
         }
 
-        socketListener.bind(67);
+        socketListener.bind(67, addr);
     }
 
     void sendTestNak() {

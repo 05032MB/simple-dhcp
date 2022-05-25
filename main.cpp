@@ -1,6 +1,5 @@
 #include "dhcpmsg.hpp"
 #include "dhcpopts.hpp"
-#include "pcapwrapper.hpp"
 #include "socket.hpp"
 #include "addrpool.hpp"
 #include "dhcpsrvc.hpp"
@@ -16,9 +15,9 @@ std::string getEnvOrEmpty(const std::string &name) {
 
 int main(int argc, char *argv[])
 {
-    if(argc < 2) {
-        std::cout << "Usage: " << argv[0] << " interface " << std::endl;
-        return -1;
+    std::string addr = "";
+    if(argc >= 2) {
+        addr = argv[1];
     }
     
     try {
@@ -31,7 +30,7 @@ int main(int argc, char *argv[])
             dnsAddrs.push_back(tmps);
         }
 
-        dhcpsrvc service(argv[1], getEnvOrEmpty("DHCP_APP_POOL_LOW"), getEnvOrEmpty("DHCP_APP_POOL_HIGH"), 
+        dhcpsrvc service(addr, getEnvOrEmpty("DHCP_APP_POOL_LOW"), getEnvOrEmpty("DHCP_APP_POOL_HIGH"), 
             getEnvOrEmpty("DHCP_APP_GATEWAY"), getEnvOrEmpty("DHCP_APP_SUBNET_MASK"), dnsAddrs);
         
         std::cout << "Service starting..." << std::endl;

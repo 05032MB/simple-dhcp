@@ -42,14 +42,18 @@ public:
             std::cout << "Warning: requested rcv buff: " << siz << " but got: " << opt << std::endl;
     }
 
-    void bind(int port, std::string addr = "") {
+    void bind(int port, const std::string& addr = "") {
         sockaddr_in saddr = SOCKADDR_IN_INIT;
         saddr.sin_family = AF_INET;
         saddr.sin_port = htons(port);
         
         int _addr = htonl(INADDR_ANY);
-        if(!addr.empty())
+        if(!addr.empty()) {
            _addr = inet_addr(addr.c_str());
+           if(_addr == -1) {
+               THROW_RUNTIME_GET_ERRNO("Cannot bind the socket to the address.");
+           }
+        }
         saddr.sin_addr.s_addr = _addr;
 
         if(::bind(sock, reinterpret_cast<sockaddr*>(&saddr), sizeof(saddr)) < 0)
